@@ -44,7 +44,7 @@ sample: |
     - <EventData>
        <Data Name="SubjectUserSid">S-1-5-18</Data> 
        <Data Name="SubjectUserName">atc-win-10$</Data> 
-       <Data Name="SubjectDomainName">CONTOSO</Data> 
+       <Data Name="SubjectDomainName">ATC</Data> 
        <Data Name="SubjectLogonId">0x3e7</Data> 
        <Data Name="ServiceName">AppHostSvc</Data> 
        <Data Name="ServiceFileName">%windir%\\system32\\svchost.exe -k apphost</Data> 

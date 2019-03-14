@@ -51,29 +51,46 @@ level: high
 
 
 
-### Kibana query
-
+### es-qs
+    
 ```
 ((EventID:"1" AND Description:"Windows\\ PowerShell") AND NOT ((Image.keyword:(*\\\\powershell.exe *\\\\powershell_ise.exe) OR Description:"Windows\\ PowerShell\\ ISE")))
 ```
 
 
-
-
-
-### X-Pack Watcher
-
+### xpack-watcher
+    
 ```
 curl -s -XPUT -H \'Content-Type: application/json\' --data-binary @- localhost:9200/_xpack/watcher/watch/Renamed-Powershell.exe <<EOF\n{\n  "trigger": {\n    "schedule": {\n      "interval": "30m"\n    }\n  },\n  "input": {\n    "search": {\n      "request": {\n        "body": {\n          "size": 0,\n          "query": {\n            "query_string": {\n              "query": "((EventID:\\"1\\" AND Description:\\"Windows\\\\ PowerShell\\") AND NOT ((Image.keyword:(*\\\\\\\\powershell.exe *\\\\\\\\powershell_ise.exe) OR Description:\\"Windows\\\\ PowerShell\\\\ ISE\\")))",\n              "analyze_wildcard": true\n            }\n          }\n        },\n        "indices": []\n      }\n    }\n  },\n  "condition": {\n    "compare": {\n      "ctx.payload.hits.total": {\n        "not_eq": 0\n      }\n    }\n  },\n  "actions": {\n    "send_email": {\n      "email": {\n        "to": null,\n        "subject": "Sigma Rule \'Renamed Powershell.exe\'",\n        "body": "Hits:\\n{{#ctx.payload.hits.hits}}{{_source}}\\n================================================================================\\n{{/ctx.payload.hits.hits}}",\n        "attachments": {\n          "data.json": {\n            "data": {\n              "format": "json"\n            }\n          }\n        }\n      }\n    }\n  }\n}\nEOF\n
 ```
 
 
-
-
-
-### Graylog
-
+### graylog
+    
 ```
 ((EventID:"1" AND Description:"Windows PowerShell") AND NOT ((Image:("*\\\\powershell.exe" "*\\\\powershell_ise.exe") OR Description:"Windows PowerShell ISE")))
 ```
+
+
+### splunk
+    
+```
+((EventID="1" Description="Windows PowerShell") NOT (((Image="*\\\\powershell.exe" OR Image="*\\\\powershell_ise.exe") OR Description="Windows PowerShell ISE")))
+```
+
+
+### logpoint
+    
+```
+((EventID="1" Description="Windows PowerShell")  -((Image IN ["*\\\\powershell.exe", "*\\\\powershell_ise.exe"] OR Description="Windows PowerShell ISE")))
+```
+
+
+### grep
+    
+```
+grep -P '^(?:.*(?=.*(?:.*(?=.*1)(?=.*Windows PowerShell)))(?=.*(?!.*(?:.*(?:.*(?:.*(?:.*.*\\powershell\\.exe|.*.*\\powershell_ise\\.exe)|.*Windows PowerShell ISE))))))'
+```
+
+
 

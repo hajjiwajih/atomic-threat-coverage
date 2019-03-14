@@ -3,7 +3,7 @@
 | Description          | Detects a suspicious Microsoft certutil execution with sub commands like 'decode' sub command, which is sometimes used to decode malicious code with the built-in certutil utility                                                                                                                                           |
 | ATT&amp;CK Tactic    | <ul><li>[TA0005: Defense Evasion](https://attack.mitre.org/tactics/TA0005)</li></ul>  |
 | ATT&amp;CK Technique | <ul><li>[T1140: Deobfuscate/Decode Files or Information](https://attack.mitre.org/techniques/T1140)</li><li>[T1105: Remote File Copy](https://attack.mitre.org/techniques/T1105)</li></ul>                             |
-| Data Needed          | <ul><li>[DN_0001_4688_windows_process_creation](../Data_Needed/DN_0001_4688_windows_process_creation.md)</li><li>[DN_0002_4688_windows_process_creation_with_commandline](../Data_Needed/DN_0002_4688_windows_process_creation_with_commandline.md)</li><li>[DN_0003_1_windows_sysmon_process_creation](../Data_Needed/DN_0003_1_windows_sysmon_process_creation.md)</li></ul>                                                         |
+| Data Needed          | <ul><li>[DN_0003_1_windows_sysmon_process_creation](../Data_Needed/DN_0003_1_windows_sysmon_process_creation.md)</li><li>[DN_0002_4688_windows_process_creation_with_commandline](../Data_Needed/DN_0002_4688_windows_process_creation_with_commandline.md)</li></ul>                                                         |
 | Trigger              | <ul><li>[T1140: Deobfuscate/Decode Files or Information](../Triggers/T1140.md)</li><li>[T1105: Remote File Copy](../Triggers/T1105.md)</li></ul>  |
 | Severity Level       | high                                                                                                                                                 |
 | False Positives      | <ul><li>False positives depend on scripts and administrative tools used in the monitored environment</li></ul>                                                                  |
@@ -98,29 +98,46 @@ detection:
 
 
 
-### Kibana query
-
+### es-qs
+    
 ```
 (EventID:"1" AND CommandLine.keyword:(*\\ \\-decode\\ * *\\ \\/decode\\ * *\\ \\-decodehex\\ * *\\ \\/decodehex\\ * *\\ \\-urlcache\\ * *\\ \\/urlcache\\ * *\\ \\-verifyctl\\ * *\\ \\/verifyctl\\ * *\\ \\-encode\\ * *\\ \\/encode\\ * *certutil*\\ \\-URL* *certutil*\\ \\/URL* *certutil*\\ \\-ping* *certutil*\\ \\/ping*))\n(EventID:"4688" AND ProcessCommandLine.keyword:(*\\ \\-decode\\ * *\\ \\/decode\\ * *\\ \\-decodehex\\ * *\\ \\/decodehex\\ * *\\ \\-urlcache\\ * *\\ \\/urlcache\\ * *\\ \\-verifyctl\\ * *\\ \\/verifyctl\\ * *\\ \\-encode\\ * *\\ \\/encode\\ * *certutil*\\ \\-URL* *certutil*\\ \\/URL* *certutil*\\ \\-ping* *certutil*\\ \\/ping*))
 ```
 
 
-
-
-
-### X-Pack Watcher
-
+### xpack-watcher
+    
 ```
 curl -s -XPUT -H \'Content-Type: application/json\' --data-binary @- localhost:9200/_xpack/watcher/watch/Suspicious-Certutil-Command <<EOF\n{\n  "trigger": {\n    "schedule": {\n      "interval": "30m"\n    }\n  },\n  "input": {\n    "search": {\n      "request": {\n        "body": {\n          "size": 0,\n          "query": {\n            "query_string": {\n              "query": "(EventID:\\"1\\" AND CommandLine.keyword:(*\\\\ \\\\-decode\\\\ * *\\\\ \\\\/decode\\\\ * *\\\\ \\\\-decodehex\\\\ * *\\\\ \\\\/decodehex\\\\ * *\\\\ \\\\-urlcache\\\\ * *\\\\ \\\\/urlcache\\\\ * *\\\\ \\\\-verifyctl\\\\ * *\\\\ \\\\/verifyctl\\\\ * *\\\\ \\\\-encode\\\\ * *\\\\ \\\\/encode\\\\ * *certutil*\\\\ \\\\-URL* *certutil*\\\\ \\\\/URL* *certutil*\\\\ \\\\-ping* *certutil*\\\\ \\\\/ping*))",\n              "analyze_wildcard": true\n            }\n          }\n        },\n        "indices": []\n      }\n    }\n  },\n  "condition": {\n    "compare": {\n      "ctx.payload.hits.total": {\n        "not_eq": 0\n      }\n    }\n  },\n  "actions": {\n    "send_email": {\n      "email": {\n        "to": null,\n        "subject": "Sigma Rule \'Suspicious Certutil Command\'",\n        "body": "Hits:\\n{{#ctx.payload.hits.hits}}Hit on {{_source.@timestamp}}:\\n      CommandLine = {{_source.CommandLine}}\\nParentCommandLine = {{_source.ParentCommandLine}}================================================================================\\n{{/ctx.payload.hits.hits}}",\n        "attachments": {\n          "data.json": {\n            "data": {\n              "format": "json"\n            }\n          }\n        }\n      }\n    }\n  }\n}\nEOF\ncurl -s -XPUT -H \'Content-Type: application/json\' --data-binary @- localhost:9200/_xpack/watcher/watch/Suspicious-Certutil-Command-2 <<EOF\n{\n  "trigger": {\n    "schedule": {\n      "interval": "30m"\n    }\n  },\n  "input": {\n    "search": {\n      "request": {\n        "body": {\n          "size": 0,\n          "query": {\n            "query_string": {\n              "query": "(EventID:\\"4688\\" AND ProcessCommandLine.keyword:(*\\\\ \\\\-decode\\\\ * *\\\\ \\\\/decode\\\\ * *\\\\ \\\\-decodehex\\\\ * *\\\\ \\\\/decodehex\\\\ * *\\\\ \\\\-urlcache\\\\ * *\\\\ \\\\/urlcache\\\\ * *\\\\ \\\\-verifyctl\\\\ * *\\\\ \\\\/verifyctl\\\\ * *\\\\ \\\\-encode\\\\ * *\\\\ \\\\/encode\\\\ * *certutil*\\\\ \\\\-URL* *certutil*\\\\ \\\\/URL* *certutil*\\\\ \\\\-ping* *certutil*\\\\ \\\\/ping*))",\n              "analyze_wildcard": true\n            }\n          }\n        },\n        "indices": []\n      }\n    }\n  },\n  "condition": {\n    "compare": {\n      "ctx.payload.hits.total": {\n        "not_eq": 0\n      }\n    }\n  },\n  "actions": {\n    "send_email": {\n      "email": {\n        "to": null,\n        "subject": "Sigma Rule \'Suspicious Certutil Command\'",\n        "body": "Hits:\\n{{#ctx.payload.hits.hits}}Hit on {{_source.@timestamp}}:\\n      CommandLine = {{_source.CommandLine}}\\nParentCommandLine = {{_source.ParentCommandLine}}================================================================================\\n{{/ctx.payload.hits.hits}}",\n        "attachments": {\n          "data.json": {\n            "data": {\n              "format": "json"\n            }\n          }\n        }\n      }\n    }\n  }\n}\nEOF\n
 ```
 
 
-
-
-
-### Graylog
-
+### graylog
+    
 ```
 (EventID:"1" AND CommandLine:("* \\-decode *" "* \\/decode *" "* \\-decodehex *" "* \\/decodehex *" "* \\-urlcache *" "* \\/urlcache *" "* \\-verifyctl *" "* \\/verifyctl *" "* \\-encode *" "* \\/encode *" "*certutil* \\-URL*" "*certutil* \\/URL*" "*certutil* \\-ping*" "*certutil* \\/ping*"))\n(EventID:"4688" AND ProcessCommandLine:("* \\-decode *" "* \\/decode *" "* \\-decodehex *" "* \\/decodehex *" "* \\-urlcache *" "* \\/urlcache *" "* \\-verifyctl *" "* \\/verifyctl *" "* \\-encode *" "* \\/encode *" "*certutil* \\-URL*" "*certutil* \\/URL*" "*certutil* \\-ping*" "*certutil* \\/ping*"))
 ```
+
+
+### splunk
+    
+```
+(EventID="1" (CommandLine="* -decode *" OR CommandLine="* /decode *" OR CommandLine="* -decodehex *" OR CommandLine="* /decodehex *" OR CommandLine="* -urlcache *" OR CommandLine="* /urlcache *" OR CommandLine="* -verifyctl *" OR CommandLine="* /verifyctl *" OR CommandLine="* -encode *" OR CommandLine="* /encode *" OR CommandLine="*certutil* -URL*" OR CommandLine="*certutil* /URL*" OR CommandLine="*certutil* -ping*" OR CommandLine="*certutil* /ping*")) | table CommandLine,ParentCommandLine\n(EventID="4688" (ProcessCommandLine="* -decode *" OR ProcessCommandLine="* /decode *" OR ProcessCommandLine="* -decodehex *" OR ProcessCommandLine="* /decodehex *" OR ProcessCommandLine="* -urlcache *" OR ProcessCommandLine="* /urlcache *" OR ProcessCommandLine="* -verifyctl *" OR ProcessCommandLine="* /verifyctl *" OR ProcessCommandLine="* -encode *" OR ProcessCommandLine="* /encode *" OR ProcessCommandLine="*certutil* -URL*" OR ProcessCommandLine="*certutil* /URL*" OR ProcessCommandLine="*certutil* -ping*" OR ProcessCommandLine="*certutil* /ping*")) | table CommandLine,ParentCommandLine
+```
+
+
+### logpoint
+    
+```
+(EventID="1" CommandLine IN ["* -decode *", "* /decode *", "* -decodehex *", "* /decodehex *", "* -urlcache *", "* /urlcache *", "* -verifyctl *", "* /verifyctl *", "* -encode *", "* /encode *", "*certutil* -URL*", "*certutil* /URL*", "*certutil* -ping*", "*certutil* /ping*"])\n(EventID="4688" ProcessCommandLine IN ["* -decode *", "* /decode *", "* -decodehex *", "* /decodehex *", "* -urlcache *", "* /urlcache *", "* -verifyctl *", "* /verifyctl *", "* -encode *", "* /encode *", "*certutil* -URL*", "*certutil* /URL*", "*certutil* -ping*", "*certutil* /ping*"])
+```
+
+
+### grep
+    
+```
+grep -P '^(?:.*(?=.*1)(?=.*(?:.*.* -decode .*|.*.* /decode .*|.*.* -decodehex .*|.*.* /decodehex .*|.*.* -urlcache .*|.*.* /urlcache .*|.*.* -verifyctl .*|.*.* /verifyctl .*|.*.* -encode .*|.*.* /encode .*|.*.*certutil.* -URL.*|.*.*certutil.* /URL.*|.*.*certutil.* -ping.*|.*.*certutil.* /ping.*)))'\ngrep -P '^(?:.*(?=.*4688)(?=.*(?:.*.* -decode .*|.*.* /decode .*|.*.* -decodehex .*|.*.* /decodehex .*|.*.* -urlcache .*|.*.* /urlcache .*|.*.* -verifyctl .*|.*.* /verifyctl .*|.*.* -encode .*|.*.* /encode .*|.*.*certutil.* -URL.*|.*.*certutil.* /URL.*|.*.*certutil.* -ping.*|.*.*certutil.* /ping.*)))'
+```
+
+
 
