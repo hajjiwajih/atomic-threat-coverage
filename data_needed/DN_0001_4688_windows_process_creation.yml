@@ -27,6 +27,7 @@ fields:
   - TargetDomainName
   - TargetLogonId
   - ParentProcessName
+  - ParentImage         # redundant
   - MandatoryLabel
   - ProcessName         # redundant
   - Image               # redundant

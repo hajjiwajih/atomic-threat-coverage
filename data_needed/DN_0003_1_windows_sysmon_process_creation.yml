@@ -21,6 +21,7 @@ fields:
   - ProcessId
   - ProcessName
   - CommandLine
+  - ProcessCommandLine
   - LogonGuid
   - LogonId
   - TerminalSessionid

@@ -7,7 +7,7 @@
 | Type           | Windows Log 		| 
 | Channel        | Security    |
 | Provider       | Microsoft-Windows-Security-Auditing   |
-| Fields         | <ul><li>EventID</li><li>Hostname</li><li>SubjectUserSid</li><li>SubjectUserName</li><li>SubjectDomainName</li><li>SubjectLogonId</li><li>NewProcessId</li><li>NewProcessName</li><li>TokenElevationType</li><li>ProcessId</li><li>ProcessPid</li><li>TargetUserSid</li><li>TargetUserName</li><li>TargetDomainName</li><li>TargetLogonId</li><li>ParentProcessName</li><li>MandatoryLabel</li><li>ProcessName</li><li>Image</li></ul>                                               |
+| Fields         | <ul><li>EventID</li><li>Hostname</li><li>SubjectUserSid</li><li>SubjectUserName</li><li>SubjectDomainName</li><li>SubjectLogonId</li><li>NewProcessId</li><li>NewProcessName</li><li>TokenElevationType</li><li>ProcessId</li><li>ProcessPid</li><li>TargetUserSid</li><li>TargetUserName</li><li>TargetDomainName</li><li>TargetLogonId</li><li>ParentProcessName</li><li>ParentImage</li><li>MandatoryLabel</li><li>ProcessName</li><li>Image</li></ul>                                               |
 
 
 ## Log Samples
